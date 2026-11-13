@@ -1,0 +1,120 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>ElimuHub</title><meta name="theme-color" content="#0f1a14">
+<style>
+:root{--bg:#0f1a14;--card:#1a241f;--tx:#e8efe9;--mut:#9fb0a5;--pri:#4fb383;--onp:#0b140f;--bd:#2a3a30;--gold:#e8b84a;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,Arial,sans-serif}
+h1{margin:0;color:var(--pri);font-size:26px}.mut{color:var(--mut);font-size:14px}
+header{padding:12px 16px;border-bottom:3px solid var(--gold);display:flex;justify-content:space-between;align-items:center;gap:8px}
+#opt{display:none;padding:10px 16px;border-bottom:3px solid var(--gold)}#opt.on{display:block}
+.g{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}label{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+select,input,textarea,button{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 12px}
+button{color:var(--pri);font-weight:700;cursor:pointer}button.p{background:var(--pri);color:var(--onp);border-color:var(--pri)}
+nav{display:flex;overflow-x:auto;border-bottom:1px solid var(--bd)}
+nav button{border:0;border-bottom:4px solid transparent;border-radius:0;background:none;color:var(--mut);white-space:nowrap;padding:14px 12px}
+nav button.on{color:var(--pri);border-color:var(--pri)}
+main{padding:14px;max-width:960px;margin:auto}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px}
+.card.l{border-left:8px solid var(--gold)}
+textarea{width:100%;min-height:100px;box-sizing:border-box}
+.w{overflow-x:auto}table{border-collapse:collapse;width:100%}th,td{padding:6px 8px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
+td input{width:76px;padding:6px}.logo{height:70px;background:#fff;border-radius:4px}
+a{color:#9a9cf2;cursor:pointer;text-decoration:underline;display:block;text-align:center;margin:12px 0}
+.sheet{background:#fff;color:#000;border:2px solid #7a1f2b;padding:12px;margin-bottom:14px;page-break-inside:avoid}
+.sheet table th,.sheet table td{border-color:#999;color:#000}.sh{display:flex;justify-content:space-between;align-items:center;text-align:center}.sh .logo{height:60px}
+@media print{header,#opt,nav,.noprint{display:none!important}body{background:#fff}main{padding:0}.card{border:0;background:#fff;color:#000}}
+.pg{display:flex;flex-direction:column;width:210mm;height:296mm;background:#fff;overflow:hidden}
+.a5{width:210mm;height:148mm;box-sizing:border-box;padding:4mm;font-family:Georgia,serif;color:#2b1114}
+.fr{height:100%;box-sizing:border-box;border:2.5px solid #7a1f2b;outline:1px solid #7a1f2b;outline-offset:2px;background:#fff6d6;padding:2.5mm 3.5mm 4.5mm;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:1.6mm;overflow:hidden}
+.hd{background:#7a1f2b;color:#fff6d6;display:flex;align-items:center;justify-content:space-between;gap:4mm;padding:1.3mm 3mm;border-radius:2px}
+.hd .logo{height:13mm;max-width:20mm;object-fit:contain}.hd>span{width:13mm}.hd .tx{text-align:center;flex:1}.cp{width:297mm;height:210mm;box-sizing:border-box;padding:8mm;background:#fff;color:#000;font-family:Georgia,serif;overflow:hidden}.cp table{width:100%;border-collapse:collapse;font-size:9.5px}.cp th{background:#7a1f2b;color:#fff6d6;padding:4px}.cp td{border:1px solid #7a1f2b;padding:3px 4px;white-space:nowrap;color:#000}.cp .logo{height:16mm}.cap .pg{zoom:1!important;box-shadow:none!important;margin:0!important}.nm{font-weight:700;font-size:13px;letter-spacing:.3px}.po{font-size:10px}.tt{font-size:9.5px;letter-spacing:1px}
+.cols{display:flex;gap:3mm;min-height:0}.cols>div{flex:1;min-height:0}.cols table{height:100%}.pg,.pg *{-webkit-text-size-adjust:none;text-size-adjust:none}
+.ig{display:grid;grid-template-columns:1fr 1fr;border:1px solid #7a1f2b}.ig div{border:1px solid #7a1f2b;padding:1mm 1.6mm;font-size:7.5px;text-transform:uppercase;color:#7a1f2b}.ig b{display:block;font-size:10.5px;color:#000;text-transform:none}
+.a5 table{width:100%;border-collapse:collapse;font-size:calc(var(--fs,11.5) * 1px)}.a5 th{background:#7a1f2b;color:#fff6d6;padding:1.8mm 2mm;text-align:left}.a5 td{border:1px solid #7a1f2b;padding:calc(var(--fs,11.5) * .14mm) 2mm;color:#000;white-space:normal;background:#fffdf0}
+.bt{margin-top:0;display:flex;justify-content:space-between;align-items:flex-end}.qr{width:23mm;height:23mm;background:#fff;border:1px solid #7a1f2b;image-rendering:pixelated}
+@media screen{.pg{zoom:.45;box-shadow:0 0 6px #0006;margin-bottom:10px}}@media screen and (min-width:800px){.pg{zoom:.9}}
+@media print{@page{size:A4 portrait;margin:0}main{max-width:none!important;margin:0!important;padding:0!important}body{margin:0}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}.pg{page-break-after:always}.pg:last-child{page-break-after:auto}#nt{display:none!important}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body>
+<div id="app"></div>
+<script>
+/* ElimuHub on Supabase: storage layer.
+   1. Run supabase-setup.sql in the Supabase SQL Editor.
+   2. Paste your Project URL and anon key below.
+   If left empty, data is kept in this browser only (localStorage). */
+var SUPABASE_URL="https://aetgrpmydsnczewaqado.supabase.co";
+var SUPABASE_ANON_KEY="sb_publishable_6wIUwfVDSX9fFr3IIp6SuA_BHzE1bNn";
+var TABLE="app_data";
+/* Optional: URL or data-URI of a school stamp image for score sheets */
+window.STAMP_SRC="";
+
+(function(){
+var sb=(SUPABASE_URL&&SUPABASE_ANON_KEY&&window.supabase)?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
+var SEED={logo:"",teachers:[{e:"mutesh@oldoinyooibor.edu",h:"80222bd433b8090db7c721a4c56d7408ab3c04602b7c9b109c78361e7cc93d93"}],scorers:[]};
+var K=function(p){return "eh:"+p},cl=function(x){return x==null?x:JSON.parse(JSON.stringify(x))},L={};
+function fail(e){var x=new Error("network"+(e&&e.message?": "+e.message:""));x.code="network";throw x}
+async function rGet(p){if(sb){var r=await sb.from(TABLE).select("data").eq("path",p).maybeSingle();if(r.error)fail(r.error);return r.data?r.data.data:null}var v=localStorage.getItem(K(p));return v?JSON.parse(v):null}
+async function rSet(p,d){if(sb){var r=await sb.from(TABLE).upsert({path:p,data:d,updated_at:new Date().toISOString()});if(r.error)fail(r.error)}else localStorage.setItem(K(p),JSON.stringify(d))}
+async function rDel(p){if(sb){var r=await sb.from(TABLE).delete().eq("path",p);if(r.error)fail(r.error)}else localStorage.removeItem(K(p))}
+async function rList(pre){if(sb){var out=[],from=0,step=500;for(;;){var q=sb.from(TABLE).select("path,data").order("path").range(from,from+step-1);if(pre)q=q.like("path",pre.replace(/[%_\\]/g,function(c){return "\\"+c})+"%");var r=await q;if(r.error)fail(r.error);out=out.concat(r.data.map(function(x){return{path:x.path,data:x.data}}));if(r.data.length<step)break;from+=step}return out}var o=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k.indexOf(K(pre))===0)o.push({path:k.slice(3),data:JSON.parse(localStorage.getItem(k))})}return o}
+var snap=function(p,d){return{id:p.split("/").pop(),exists:d!=null,data:function(){return cl(d)}}};
+function notify(p){(L[p]||[]).forEach(function(f){rGet(p).then(function(d){f(snap(p,d))}).catch(function(){})})}
+function doc(p){return{id:p.split("/").pop(),path:p,
+ get:async function(){return snap(p,await rGet(p))},
+ set:async function(d){await rSet(p,cl(d));notify(p)},
+ delete:async function(){await rDel(p);notify(p)},
+ onSnapshot:function(f){(L[p]=L[p]||[]).push(f);var last=null;function tick(){rGet(p).then(function(d){var j=JSON.stringify(d);if(j!==last){last=j;f(snap(p,d))}}).catch(function(){})}tick();var t=sb?setInterval(tick,6000):0;return function(){L[p]=(L[p]||[]).filter(function(x){return x!==f});if(t)clearInterval(t)}}}}
+function collection(name){var fs=[],q={where:function(f,o,v){fs.push([f,o,v]);return q},get:async function(){var all=await rList(name+"/");return{docs:all.filter(function(x){return fs.every(function(c){var v=x.data&&x.data[c[0]];return c[1]==="=="?v===c[2]:c[1]==="<"?v<c[2]:true})}).map(function(x){return snap(x.path,x.data)})}}};return q}
+window.addEventListener("storage",function(e){if(e.key&&e.key.indexOf("eh:")===0)notify(e.key.slice(3))});
+var db={doc:doc,collection:collection},user={isOwner:function(){return false},canEdit:function(){return false},can:function(){return true}};
+var downloads={save:async function(o){var d=o.data,b=typeof d==="string"?new Blob([d],{type:"text/plain"}):new Blob([d]),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=o.filename;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)}};
+var ready=(async function(){try{if(!(await rGet("school/main")))await rSet("school/main",SEED)}catch(e){}})();
+window.claude={use:async function(n){if(n==="db"){await ready;return db}if(n==="user")return user;if(n==="downloads")return downloads;return null}};
+window.__sbConnected=!!sb;
+document.addEventListener("click",async function(e){
+ if(e.target.id==="bk"){var all=await rList(""),o={};all.forEach(function(x){o[x.path]=x.data});downloads.save({filename:"elimuhub-backup-"+new Date().toISOString().slice(0,10)+".json",data:JSON.stringify(o)});if(window.note)note("Backup downloaded. Keep the file safe.")}
+ if(e.target.id==="rs2"){var i=document.createElement("input");i.type="file";i.accept=".json,application/json";i.onchange=async function(){var f=i.files[0];if(!f)return;try{var o=JSON.parse(await f.text()),n=0;for(var p in o){await rSet(p,o[p]);n++;notify(p)}if(window.note)note("Restored "+n+" records. Reload the page.")}catch(x){if(window.note)note("That backup file could not be read.")}};i.click()}
+});
+})();
+</script>
+<script>
+const SUBJ=["Mathematics","English","Kiswahili","Integrated Science","Agriculture","Social Studies","CRE","Pre-technical Studies","CAS"],
+CL=["Grade 7 North","Grade 7 South","Grade 8 North","Grade 8 South","Grade 9 North","Grade 9 South"],EX=["Opener exam","Mid-term exam","End-term exam"],
+TABS=[["l","Learners"],["c","Clean up"],["e","Enter scores"],["v","View scores"],["cs","Ranking & Class sheet"],["ss","Score sheets"],["ps","Previous sheets"],["p","Parents"],["ai","AI assistant"],["a","Archive"],["x","Recover"]];
+const ADMIN_EMAIL="mutesh@oldoinyooibor.edu";let rmA=-1,pAdm="",armedP=0,ld=false,db,assets,usr,role=null,tab="l",subj=SUBJ[0],mode="t",unsubs=[],optOn=false,msg="";
+let S={cls:CL[1],ex:EX[0],term:3,year:2026,years:[2026]},D={learners:[],archive:[],bin:[],scores:{}},SC={logo:"",teachers:[],scorers:[]};
+const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const key=()=>S.year+"|"+S.term+"|"+S.ex,sc=()=>D.scores[key()]||(D.scores[key()]={}),slug=()=>"c_"+S.cls.replace(/\W/g,"_"),isA=()=>role==="admin",
+sub=()=>`${S.cls} · ${S.ex} · Term ${S.term} ${S.year}`;
+async function sha(t){try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}catch(e){return"x"+t}}
+const cl=x=>JSON.parse(JSON.stringify(x));
+window.addEventListener("unhandledrejection",e=>note("Error: "+((e.reason&&e.reason.message)||e.reason)));window.addEventListener("error",e=>note("Error: "+e.message));
+function note(t){let n=document.getElementById("nt");if(!n){n=document.createElement("div");n.id="nt";n.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));background:#e8b84a;color:#111;padding:12px 14px;border-radius:10px;z-index:99;font-weight:600;white-space:pre-wrap";n.onclick=()=>n.remove();document.body.appendChild(n)}n.textContent=t+"  (tap to close)"}
+let dirty={};
+function applyDirty(X){Object.entries(dirty).forEach(([k,v])=>{const p=k.split("|"),ky=p[0]+"|"+p[1]+"|"+p[2];X.scores=X.scores||{};const o=(X.scores[ky]=X.scores[ky]||{});o[p[3]]=o[p[3]]||{};if(v==null)delete o[p[3]][p[4]];else o[p[3]][p[4]]=v})}
+async function saveC(quiet){if(!db)return note("Database not connected.");if(!canW())return note(VO);try{let sc0=null;if(Object.keys(dirty).length){try{const sn=await tm(db.doc("cls/"+slug()).get(),8000);if(sn.exists)sc0=cl(sn.data()).scores}catch(e){}}
+const X=cl(D);if(sc0)X.scores=sc0;applyDirty(X);await tm(db.doc("cls/"+slug()).set(X),10000);dirty={};D=X;ld=true;if(!quiet)body();note("Saved")}catch(e){note("Could not save: "+(e&&e.code||"error"))}}
+function saveS(){if(db)db.doc("school/main").set(SC).catch(e=>note("Could not save: "+(e&&e.code||"error")))}
+function listen(){ld=false;unsubs.forEach(u=>u());unsubs=[];D={learners:[],archive:[],bin:[],scores:{}};if(!db)return;
+ unsubs.push(db.doc("cls/"+slug()).onSnapshot(s=>{const d=s.exists?cl(s.data()):{};ld=true;D={learners:d.learners||[],archive:d.archive||[],bin:d.bin||[],scores:d.scores||{},pub:d.pub||{},rem:d.rem||{}};applyDirty(D);if(!document.activeElement||document.activeElement.tagName!=="INPUT"){collect();body()}},()=>{}));}
+function collect(){document.querySelectorAll("[data-n]").forEach(i=>{const n=i.dataset.n,v=i.value.trim();if(i.dataset.k==="p"){const l=D.learners.find(l=>l.n===n);if(l)l.p=v;return}
+ if((D.pub||{})[S.year+"|"+S.term])return;const s=sc();s[n]=s[n]||{};let nv=null;if(v!==""){const x=+v;if(isNaN(x)||x<0||x>100){i.style.borderColor="#e74c3c";return}nv=x}if(nv!==(s[n][subj]??null)){dirty[key()+"|"+n+"|"+subj]=nv;if(nv==null)delete s[n][subj];else s[n][subj]=nv}})}
+const tm=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r({code:"timeout"}),ms))]);const canW=()=>!usr||usr.can("data.write")!==false,VO="Saving was rejected by the database. Check your Supabase policies.";
+async function add(txt){note("Adding learners…");if(!db)return note("Database not connected.");if(!canW())return note(VO);if(!ld){try{const sn=await tm(db.doc("cls/"+slug()).get(),6000),d=sn.exists?cl(sn.data()):{};D={learners:d.learners||[],archive:d.archive||[],bin:d.bin||[],scores:d.scores||{},pub:d.pub||{},rem:d.rem||{}};ld=true}catch(e){return note("Could not load class data: "+(e&&e.code||"error"))}}const seen=new Set(D.learners.map(l=>l.n));let a=0,k=0;const bad=[];let dup=0;txt.split(/\r?\n/).forEach(t=>{t=t.trim();if(!t)return;let x=t.match(/^([A-Za-z]*\d[\w-]*)\s*[,;\t ]\s*(.+)$/),y=!x&&t.match(/^(.+?)\s*[,;\t ]\s*([A-Za-z]*\d[\w-]{2,})$/);const n=x?x[1]:y?y[2]:"",name=(x?x[2]:y?y[1]:"").replace(/\s+/g," ").trim();if(!n||!name||seen.has(n)||D.learners.length>=250){k++;if(seen.has(n))dup++;else bad.push(t);return}seen.add(n);D.learners.push({n,name});a++});if(a){body();tm(db.doc("cls/"+slug()).set(D),10000).then(()=>note(a+" learners saved to "+S.cls)).catch(e=>note("Could not save: "+(e&&e.code||"error")))}note(a+" added, "+k+" skipped"+(dup?". "+dup+" already saved":"")+(bad.length?". Could not read: "+bad.slice(0,3).join(" | "):"")+".")}
+function rows(){const s=sc();return D.learners.map(l=>{const m=s[l.n]||{},v=SUBJ.map(j=>m[j]),t=v.reduce((a,b)=>a+(b||0),0),c=v.filter(x=>x!=null).length;return{l,v,t,c,mean:c?(t/c).toFixed(1):"-"}}).sort((a,b)=>b.t-a.t).map((r,i)=>(r.pos=i+1,r))}
+const th=()=>SUBJ.map(j=>`<th>${j.slice(0,4)}</th>`).join(""),logo=()=>SC.logo?`<img class="logo" src="${esc(SC.logo)}" alt="">`:"<span></span>";
+function restore(from,i){const l=D[from].splice(i,1)[0];D.learners.push(l);saveC();body()}
+function body(){const m=$("#m");if(!m)return;const L=D.learners,s=sc();let h="";
+ if(tab==="l"){h=(role!=="scorer"?`<div class="card"><b>School logo (shown left and right on every score sheet)</b><p>${SC.logo?`<img class="logo" src="${esc(SC.logo)}">`:'<span class="mut">No logo yet</span>'}</p><label for="lg" onclick="note('Opening the file picker…')" style="display:inline-block;padding:12px 16px;border:1px solid var(--bd);border-radius:10px;color:var(--pri);font-weight:700;cursor:pointer">Choose logo from phone</label><input type="file" id="lg" accept="image/*" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"><div id="lp" contenteditable="true" style="margin-top:10px;border:1px dashed var(--bd);border-radius:10px;padding:12px;color:var(--mut)">Or tap here and paste a copied image</div> <button id="rl">Remove logo</button></div>`:"")+
+ `<div class="card"><b>Upload learners to ${esc(S.cls)}</b><p><input type="file" id="f" accept=".csv,.txt"></p><p class="mut">One learner per line: assessment number, name. Example: 12345, Jane Wanjiru. You review the list in the Clean up room and can delete badly formatted names before anything is added.</p><b>Or paste the list here</b><textarea id="ta" placeholder="12345, Jane Wanjiru"></textarea><p class="mut">${L.length} of 250 learners · ${esc(S.cls)} · ${db?(ld?"database connected":"loading class data…"):"database NOT connected"}${window.__sbConnected?" · Supabase":" · this browser only"}</p><button class="p" id="ad">Add learners</button></div><div class="card"><b>Saved learners (${L.length})</b><p><label style="display:inline"><input type="checkbox" id="sa2"> Select all</label></p><div class="g"><select id="mv">${CL.filter(c=>c!==S.cls).map(c=>`<option>${c}</option>`).join("")}</select><button id="mb">Move selected</button><button id="db2">Delete selected</button><button class="p" id="sv2">Save</button></div><div class="w"><table>${L.map((l,i)=>`<tr><td><input type="checkbox" data-s="${i}"></td><td>${i+1}</td><td>${esc(l.n)}</td><td>${esc(l.name)}</td></tr>`).join("")||'<tr><td class="mut">None yet.</td></tr>'}</table></div></div>`}
+ else if(tab==="c"){h=`<div class="card"><b>Clean up</b> <span class="mut">Rows marked ⚠ may be badly formatted.</span><div class="w"><table>${L.map((l,i)=>`<tr><td>${esc(l.n)}</td><td>${esc(l.name)}${/\d/.test(l.name)||!/\s/.test(l.name)?" ⚠":""}</td><td><button data-a="${i}">Archive</button> <button data-d="${i}">Delete</button></td></tr>`).join("")||'<tr><td class="mut">No learners yet.</td></tr>'}</table></div></div>`}
+ else if(tab==="e"){h=`<div class="card"><select id="sj">${SUBJ.map(j=>`<option ${j===subj?"selected":""}>${j}</option>`).join("")}</select> <span class="mut">Marks out of 100 · the level appears as you type</span>${(D.pub||{})[S.year+"|"+S.term]?'<p class="mut"><b>This term is published, so scores are locked.</b> An admin can unlock them under Parents.</p>':""}<div class="w"><table>${L.map(l=>`<tr><td>${esc(l.n)}</td><td>${esc(l.name)}</td><td><input ${(D.pub||{})[S.year+"|"+S.term]?"disabled ":""}type="number" min="0" max="100" inputmode="numeric" data-n="${esc(l.n)}" value="${(s[l.n]||{})[subj]??""}"></td><td class="lv"><b>${(s[l.n]||{})[subj]!=null?LV(s[l.n][subj])[0]:"–"}</b></td></tr>`).join("")||'<tr><td class="mut">Add learners first.</td></tr>'}</table></div></div>`}
+ else if(tab==="v"){h=`<div class="card w"><table><tr><th>Adm</th><th>Name</th>${th()}</tr>${L.map(l=>`<tr><td>${esc(l.n)}</td><td>${esc(l.name)}</td>${SUBJ.map(j=>`<td>${(s[l.n]||{})[j]!=null?s[l.n][j]+" <small>"+LV(s[l.n][j])[0]+"</small>":"-"}</td>`).join("")}</tr>`).join("")}</table></div>`}
+ else if(tab==="cs"){return cs(m)}
+ else if(tab==="ss"){return ss(m)}else if(tab==="reg"){return reg(m)}else if(tab==="clr"){return clr(m)}else if(tab==="ps"){return ps(m)}else if(tab==="ai"){return ai(m)}else if(tab==="p"){return pr(m)}
+ else if(tab==="a"||tab==="x"){return ax(m)}
+ m.innerHTML=h;const q=(s,f)=>{const e=$(s);if(e)e.onclick=f};
+ q("#ad",()=>add($("#ta").value));
+ const sel=()=>[...m.querySelectorAll("[data-s]:checked")].map(x=>+x.da
