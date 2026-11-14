@@ -45,39 +45,81 @@ var SUPABASE_URL="https://aetgrpmydsnczewaqado.supabase.co";
 var SUPABASE_KEY="sb_publishable_6wIUwfVDSX9fFr3IIp6SuA_BHzE1bNn";
 var SYNC_URL=SUPABASE_URL+"/rest/v1/app_data";   /* table: app_data (columns: path, data) */
 var useSB=!!(SUPABASE_URL&&SUPABASE_KEY);
+/* FIREBASE (second database, mirror): your web app config values */
+var FB={apiKey:"AIzaSyDfpgCrYIkDoFvZgMsb1eYY5D_JtFFu4p0",projectId:"oldoinyo-portal"};
+var useFB=!!(FB.apiKey&&FB.projectId);
+var ST={sb:"-",fb:"-"};
+function tfetch(u,o,ms){var c=new AbortController(),t=setTimeout(function(){c.abort()},ms||10000);o=o||{};o.signal=c.signal;return fetch(u,o).finally(function(){clearTimeout(t)})}
 var SEED={logo:"crest.jpg",teachers:[{e:"mutesh@oldoinyooibor.edu",h:"80222bd433b8090db7c721a4c56d7408ab3c04602b7c9b109c78361e7cc93d93"}],scorers:[]};
 var K=function(p){return "eh:"+p},cl=function(x){return x==null?x:JSON.parse(JSON.stringify(x))},L={};
 
 /* ---- Supabase REST (PostgREST) ---- */
 function sbH(extra){var h={"apikey":SUPABASE_KEY,"Content-Type":"application/json"};if(/^eyJ/.test(SUPABASE_KEY))h["Authorization"]="Bearer "+SUPABASE_KEY;for(var k in extra||{})h[k]=extra[k];return h}
 function sbFail(r){var e=new Error("supabase "+r.status);e.code=r.status===401||r.status===403?"permission-denied":r.status===404?"table-not-found":"network";throw e}
-async function sbGet(p){var r=await fetch(SYNC_URL+"?select=data&path=eq."+encodeURIComponent(p),{headers:sbH()});if(!r.ok)sbFail(r);var a=await r.json();return a.length?a[0].data:null}
-async function sbSet(p,d){var r=await fetch(SYNC_URL+"?on_conflict=path",{method:"POST",headers:sbH({"Prefer":"resolution=merge-duplicates,return=minimal"}),body:JSON.stringify([{path:p,data:d,updated_at:new Date().toISOString()}])});if(!r.ok)sbFail(r)}
-async function sbDel(p){var r=await fetch(SYNC_URL+"?path=eq."+encodeURIComponent(p),{method:"DELETE",headers:sbH({"Prefer":"return=minimal"})});if(!r.ok)sbFail(r)}
-async function sbList(pre){var r=await fetch(SYNC_URL+"?select=path,data"+(pre?"&path=like."+encodeURIComponent(pre)+"*":"")+"&limit=5000",{headers:sbH()});if(!r.ok)sbFail(r);return await r.json()}
+async function sbGet(p){var r=await tfetch(SYNC_URL+"?select=data&path=eq."+encodeURIComponent(p),{headers:sbH()});if(!r.ok)sbFail(r);var a=await r.json();return a.length?a[0].data:null}
+async function sbSet(p,d,ts){var r=await tfetch(SYNC_URL+"?on_conflict=path",{method:"POST",headers:sbH({"Prefer":"resolution=merge-duplicates,return=minimal"}),body:JSON.stringify([{path:p,data:d,updated_at:new Date(ts||Date.now()).toISOString()}])});if(!r.ok)sbFail(r)}
+async function sbDel(p){var r=await tfetch(SYNC_URL+"?path=eq."+encodeURIComponent(p),{method:"DELETE",headers:sbH({"Prefer":"return=minimal"})});if(!r.ok)sbFail(r)}
+async function sbList(pre){var r=await tfetch(SYNC_URL+"?select=path,data,updated_at"+(pre?"&path=like."+encodeURIComponent(pre)+"*":"")+"&limit=5000",{headers:sbH()});if(!r.ok)sbFail(r);var a=await r.json();return a.map(function(x){return{path:x.path,data:x.data,ts:Date.parse(x.updated_at)||0}})}
+
+/* ---- Firebase (Firestore REST + anonymous sign-in) ---- */
+var tok=null,tokExp=0;
+function ferr(c){var e=new Error(c);e.code=c;throw e}
+async function fbToken(force){if(!force&&tok&&Date.now()<tokExp-60000)return tok;var rt=localStorage.getItem("eh:fbrt"),r,j;
+ if(rt){try{r=await tfetch("https://securetoken.googleapis.com/v1/token?key="+FB.apiKey,{method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body:"grant_type=refresh_token&refresh_token="+encodeURIComponent(rt)});j=await r.json();if(r.ok){tok=j.id_token;tokExp=Date.now()+(+j.expires_in)*1000;localStorage.setItem("eh:fbrt",j.refresh_token);return tok}}catch(e){}}
+ r=await tfetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key="+FB.apiKey,{method:"POST",headers:{"content-type":"application/json"},body:'{"returnSecureToken":true}'});j=await r.json();if(!r.ok)ferr("auth-failed");tok=j.idToken;tokExp=Date.now()+(+j.expiresIn)*1000;localStorage.setItem("eh:fbrt",j.refreshToken);return tok}
+var FBU=function(){return "https://firestore.googleapis.com/v1/projects/"+FB.projectId+"/databases/(default)/documents/eh"},fid=function(p){return encodeURIComponent(p.replace(/\//g,"~"))};
+async function fbReq(m,url,body){var r;for(var i=0;i<2;i++){var t=await fbToken(i>0);r=await tfetch(url,{method:m,headers:{"Authorization":"Bearer "+t,"content-type":"application/json"},body:body?JSON.stringify(body):undefined});if(r.status!==401)return r}return r}
+function fbCode(r){return r.status===403?"permission-denied":"network"}
+async function fbGet(p){var r=await fbReq("GET",FBU()+"/"+fid(p));if(r.status===404){var j0={};try{j0=await r.json()}catch(e){}if(j0.error&&/database/i.test(j0.error.message||""))ferr("database-missing");return null}if(!r.ok)ferr(fbCode(r));var j=await r.json();return JSON.parse(j.fields.json.stringValue)}
+async function fbSet(p,d,ts){var r=await fbReq("PATCH",FBU()+"/"+fid(p),{fields:{json:{stringValue:JSON.stringify(d)},ts:{integerValue:String(ts||Date.now())}}});if(!r.ok)ferr(fbCode(r))}
+async function fbDel(p){var r=await fbReq("DELETE",FBU()+"/"+fid(p));if(!r.ok&&r.status!==404)ferr(fbCode(r))}
+async function fbList(pre){var out=[],pt="";do{var r=await fbReq("GET",FBU()+"?pageSize=300"+(pt?"&pageToken="+encodeURIComponent(pt):""));if(!r.ok)ferr(fbCode(r));var j=await r.json();(j.documents||[]).forEach(function(d){var id=decodeURIComponent(d.name.split("/").pop()).replace(/~/g,"/");if(id.indexOf(pre)===0)out.push({path:id,data:JSON.parse(d.fields.json.stringValue),ts:+((d.fields.ts||{}).integerValue||0)})});pt=j.nextPageToken||""}while(pt);return out}
 function fail(){var e=new Error("network");e.code="network";throw e}
-async function rGet(p){if(useSB)return sbGet(p);var v=localStorage.getItem(K(p));return v?JSON.parse(v):null}
-async function rSet(p,d){if(useSB)return sbSet(p,d);localStorage.setItem(K(p),JSON.stringify(d))}
-async function rDel(p){if(useSB)return sbDel(p);localStorage.removeItem(K(p))}
-async function rList(pre){if(useSB)return sbList(pre);var o=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k.indexOf(K(pre))===0)o.push({path:k.slice(3),data:JSON.parse(localStorage.getItem(k))})}return o}
+async function rGet(p){
+ if(useSB){var v=null;try{v=await sbGet(p);ST.sb="ok"}catch(e){ST.sb="fail";if(useFB){try{var m=await fbGet(p);ST.fb="ok";if(m!==null)return m}catch(x){ST.fb="fail"}}throw e}
+  if(v!==null)return v;
+  if(useFB){try{var m2=await fbGet(p);ST.fb="ok";if(m2!==null){sbSet(p,m2,Date.now()).catch(function(){});return m2}}catch(x){ST.fb="fail"}}
+  return null}
+ if(useFB){var w=await fbGet(p);ST.fb="ok";return w}
+ var l=localStorage.getItem(K(p));return l?JSON.parse(l):null}
+async function rSet(p,d){
+ if(!useSB&&!useFB){localStorage.setItem(K(p),JSON.stringify(d));return}
+ var ts=Date.now(),jobs=[];if(useSB)jobs.push(sbSet(p,d,ts).then(function(){ST.sb="ok"},function(e){ST.sb="fail";throw e}));if(useFB)jobs.push(fbSet(p,d,ts).then(function(){ST.fb="ok"},function(e){ST.fb="fail";throw e}));
+ var res=await Promise.allSettled(jobs),ok=res.filter(function(x){return x.status==="fulfilled"}).length;if(!ok)throw res[0].reason;if(ok<res.length)window.ehMirrorBehind=true}
+async function rDel(p){
+ if(!useSB&&!useFB){localStorage.removeItem(K(p));return}
+ var jobs=[];if(useSB)jobs.push(sbDel(p));if(useFB)jobs.push(fbDel(p));var res=await Promise.allSettled(jobs);if(!res.some(function(x){return x.status==="fulfilled"}))throw res[0].reason}
+async function rList(pre){
+ if(useSB){try{var a=await sbList(pre);ST.sb="ok";return a}catch(e){ST.sb="fail";if(useFB){var b=await fbList(pre);ST.fb="ok";return b}throw e}}
+ if(useFB)return fbList(pre);
+ var o=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k.indexOf(K(pre))===0)o.push({path:k.slice(3),data:JSON.parse(localStorage.getItem(k))})}return o}
 var snap=function(p,d){return{id:p.split("/").pop(),exists:d!=null,data:function(){return cl(d)}}};
 function notify(p){(L[p]||[]).forEach(function(f){rGet(p).then(function(d){f(snap(p,d))}).catch(function(){})})}
 function doc(p){return{id:p.split("/").pop(),path:p,
  get:async function(){return snap(p,await rGet(p))},
  set:async function(d){await rSet(p,cl(d));notify(p)},
  delete:async function(){await rDel(p);notify(p)},
- onSnapshot:function(f){(L[p]=L[p]||[]).push(f);var last=null;function tick(){rGet(p).then(function(d){var j=JSON.stringify(d);if(j!==last){last=j;f(snap(p,d))}}).catch(function(){})}tick();var t=useSB?setInterval(tick,6000):0;return function(){L[p]=(L[p]||[]).filter(function(x){return x!==f});if(t)clearInterval(t)}}}}
+ onSnapshot:function(f){(L[p]=L[p]||[]).push(f);var last=null;function tick(){if(document.hidden&&last!==null)return;rGet(p).then(function(d){var j=JSON.stringify(d);if(j!==last){last=j;f(snap(p,d))}}).catch(function(){})}tick();var t=(useSB||useFB)?setInterval(tick,10000):0;return function(){L[p]=(L[p]||[]).filter(function(x){return x!==f});if(t)clearInterval(t)}}}}
 function collection(name){var fs=[],q={where:function(f,o,v){fs.push([f,o,v]);return q},get:async function(){var all=await rList(name+"/");return{docs:all.filter(function(x){return fs.every(function(c){var v=x.data&&x.data[c[0]];return c[1]==="=="?v===c[2]:c[1]==="<"?v<c[2]:true})}).map(function(x){return snap(x.path,x.data)})}}};return q}
 window.addEventListener("storage",function(e){if(e.key&&e.key.indexOf("eh:")===0)notify(e.key.slice(3))});
 var db={doc:doc,collection:collection},user={isOwner:function(){return false},canEdit:function(){return false},can:function(){return true}};
 var downloads={save:async function(o){var d=o.data,b=typeof d==="string"?new Blob([d],{type:"text/plain"}):new Blob([d]),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=o.filename;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)}};
 var ready=(async function(){try{if(!(await rGet("school/main")))await rSet("school/main",SEED)}catch(e){}})();
 window.ehSeedNow=async function(){var d=await rGet("school/main");if(!d){await rSet("school/main",SEED);d=await rGet("school/main")}return d};
-window.ehCheck=async function(){if(!useSB)return"Data is stored in this browser only.";try{var r=await fetch(SYNC_URL+"?select=path&limit=1",{headers:sbH()});if(r.ok)return"Database connected.";if(r.status===404)return"Database table app_data was not found. In Supabase open SQL Editor and run supabase-setup.sql.";if(r.status===401||r.status===403)return"Database refused access. Run supabase-setup.sql again to allow the app to read and write.";return"Database error "+r.status+"."}catch(e){return"Cannot reach the database. Check your internet connection."}};
+window.ehCheck=async function(){var m=[];
+ if(useSB){try{var r=await tfetch(SYNC_URL+"?select=path&limit=1",{headers:sbH()});m.push(r.ok?"Supabase: connected.":r.status===404?"Supabase: table app_data missing (run supabase-setup.sql).":(r.status===401||r.status===403)?"Supabase: access refused (run supabase-setup.sql again).":"Supabase: error "+r.status+".")}catch(e){m.push("Supabase: cannot be reached.")}}
+ if(useFB){try{await fbGet("school/main");m.push("Firebase: connected.")}catch(e){var c=e&&e.code;m.push("Firebase: "+(c==="auth-failed"?"not ready (turn on Anonymous sign-in).":c==="database-missing"?"database not created yet.":c==="permission-denied"?"rules refuse access (publish the rules).":"cannot be reached."))}}
+ return m.join(" ")||"Data is stored in this browser only."};
+window.ehSyncAll=async function(){if(!useSB||!useFB)return"Both databases must be set up first.";var a,b;try{a=await sbList("")}catch(e){return"Supabase cannot be reached."}try{b=await fbList("")}catch(e){return"Firebase is not ready. Check its status on the sign-in page."}
+ var A={},B={},toB=0,toA=0;a.forEach(function(x){A[x.path]=x});b.forEach(function(x){B[x.path]=x});
+ for(var p in A){if(!B[p]||A[p].ts>B[p].ts){await fbSet(p,A[p].data,A[p].ts||Date.now());toB++}}
+ for(var q in B){if(!A[q]||B[q].ts>A[q].ts){await sbSet(q,B[q].data,B[q].ts||Date.now());toA++}}
+ window.ehMirrorBehind=false;return"Synced. Supabase to Firebase: "+toB+" records. Firebase to Supabase: "+toA+" records."};
 window.claude={use:async function(n){if(n==="db"){await ready;return db}if(n==="user")return user;if(n==="downloads")return downloads;return null}};
 /* backup and restore */
 document.addEventListener("click",async function(e){
  if(e.target.id==="bk"){var all=await rList(""),o={};all.forEach(function(x){o[x.path]=x.data});downloads.save({filename:"elimuhub-backup-"+new Date().toISOString().slice(0,10)+".json",data:JSON.stringify(o)});if(window.note)note("Backup downloaded. Keep the file safe.")}
+ if(e.target.id==="sy"){if(window.note)note("Syncing databases…");var t=await window.ehSyncAll();if(window.note)note(t)}
  if(e.target.id==="rs2"){var i=document.createElement("input");i.type="file";i.accept=".json,application/json";i.onchange=async function(){var f=i.files[0];if(!f)return;try{var o=JSON.parse(await f.text()),n=0;for(var p in o){await rSet(p,o[p]);n++;notify(p)}if(window.note)note("Restored "+n+" records. Reload the page.")}catch(x){if(window.note)note("That backup file could not be read.")}};i.click()}
 });
 })();
@@ -144,7 +186,7 @@ $("#go").onclick=async()=>{if(mode==="p"){const n=$("#an").value.trim();if(!n)re
  A.innerHTML=`<header><div><h1>ElimuHub</h1><div class="mut">${esc(sub())}</div></div><button id="ob">Options ${optOn?"▴":"▾"}</button></header>
  <div id="opt" class="${optOn?"on":""}"><div class="g"><div><label>Class</label><select id="sc">${CL.map(c=>`<option ${c===S.cls?"selected":""}>${c}</option>`).join("")}</select></div><div><label>Assessment</label><select id="se">${EX.map(c=>`<option ${c===S.ex?"selected":""}>${c}</option>`).join("")}</select></div></div>
  <div class="g"><div><label>Term</label><select id="st1">${[1,2,3].map(t=>`<option ${t===S.term?"selected":""}>Term ${t}</option>`).join("")}</select></div><div><label>Year</label><select id="sy">${S.years.map(y=>`<option ${y===S.year?"selected":""}>${y}</option>`).join("")}</select></div><div><label>&nbsp;</label><button id="ay">+ Year</button></div></div>
- <div class="g">${isA()?'<button id="rt">Register teachers</button>':""}${role!=="scorer"?'<button id="cl">Clear learners scores</button>':""}${isA()?'<button id="bk">Download backup</button><button id="rs2">Restore backup</button>':""}<button id="rf">Refresh</button><button class="p" id="sa">Save all</button><button id="so">Sign out</button><span id="st" class="mut" style="align-self:center"></span></div></div>
+ <div class="g">${isA()?'<button id="rt">Register teachers</button>':""}${role!=="scorer"?'<button id="cl">Clear learners scores</button>':""}${isA()?'<button id="bk">Download backup</button><button id="rs2">Restore backup</button><button id="sy">Sync databases</button>':""}<button id="rf">Refresh</button><button class="p" id="sa">Save all</button><button id="so">Sign out</button><span id="st" class="mut" style="align-self:center"></span></div></div>
  <nav>${tabs.map(t=>`<button data-t="${t[0]}" class="${t[0]===tab?"on":""}">${t[1]}</button>`).join("")}</nav><main id="m"></main>`;
  const q=(s,f)=>$(s).onclick=f,ch=(s,f)=>$(s).onchange=f;
  q("#ob",()=>{collect();optOn=!optOn;app()});ch("#sc",async e=>{collect();const v=e.target.value;await saveC(true);S.cls=v;dirty={};listen();app()});ch("#se",e=>{collect();S.ex=e.target.value;app()});ch("#st1",e=>{collect();S.term=+e.target.value.slice(5);app()});ch("#sy",e=>{collect();S.year=+e.target.value;app()});
